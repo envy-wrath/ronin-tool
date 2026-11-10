@@ -396,16 +396,17 @@ async function gate() {
     lock.classList.remove("hidden");
     glitch($(".lock-card"));
     typeAll($(".lock-card"), 120);
-    const key = $("#lk-key"), status = $("#lk-status");
+    const key = $("#lk-key"), pseudo = $("#lk-pseudo"), status = $("#lk-status");
     $("#lk-copy").onclick = async () => { await api.copy(st.machine); setStatus(status, "MACHINE ID COPIED"); };
     const tryKey = async () => {
-      const r = await api.activate(key.value);
+      const r = await api.activate(key.value, pseudo.value);
       setStatus(status, r.msg, r.ok);
       if (r.ok) { flash($(".lock-card")); setTimeout(() => { lock.classList.add("hidden"); resolve(true); }, 450); }
     };
     $("#lk-go").onclick = tryKey;
     key.onkeydown = e => { if (e.key === "Enter" && e.ctrlKey) tryKey(); };
-    setTimeout(() => key.focus(), 400);
+    pseudo.onkeydown = e => { if (e.key === "Enter") key.focus(); };
+    setTimeout(() => pseudo.focus(), 400);
   });
 }
 

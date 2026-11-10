@@ -168,7 +168,9 @@ textarea.notes::placeholder { color: #3b3635; }
 .lock-sub { margin-top: 8px; font-size: 11px; color: var(--grey); letter-spacing: .3em; }
 .lock-row { display: flex; align-items: center; gap: 12px; margin-top: 26px; font-size: 12px; letter-spacing: .14em; color: var(--grey); }
 .lock-row .sl { color: var(--red); }
-#lk-key { width: 100%; height: 86px; resize: none; margin-top: 18px; padding: 12px 14px; background: rgba(0,0,0,.4); box-shadow: inset 0 0 18px rgba(0,0,0,.8); font-family: Consolas, monospace; font-size: 12px; letter-spacing: .04em; line-height: 1.6; color: #d7d2ce; user-select: text; word-break: break-all; text-transform: none; }
+.lock-input { width: 100%; margin-top: 18px; padding: 11px 14px; background: rgba(0,0,0,.4); box-shadow: inset 0 0 18px rgba(0,0,0,.8); font-size: 14px; letter-spacing: .14em; color: var(--white); text-transform: uppercase; }
+.lock-input::placeholder { color: #3b3635; letter-spacing: .2em; }
+#lk-key { width: 100%; height: 72px; resize: none; margin-top: 12px; padding: 12px 14px; background: rgba(0,0,0,.4); box-shadow: inset 0 0 18px rgba(0,0,0,.8); font-family: Consolas, monospace; font-size: 12px; letter-spacing: .04em; line-height: 1.6; color: #d7d2ce; user-select: text; word-break: break-all; text-transform: none; }
 #lk-key::placeholder { color: #3b3635; letter-spacing: .2em; }
 .lock-actions { margin-top: 16px; }
 .big-act { font-size: 15px; letter-spacing: .34em; color: var(--white); padding: 8px 10px; }

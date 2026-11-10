@@ -18,6 +18,7 @@ import psutil
 import webview
 
 import license as lic
+import relay
 from version import REPO, VERSION
 
 NO_WINDOW = 0x08000000
@@ -26,6 +27,56 @@ APP_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "Roni
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 HOME = os.path.expanduser("~")
 LOCAL = os.environ.get("LOCALAPPDATA", HOME)
+# Registre PARTAGÉ avec RONIN KEYGEN : l'activation y renvoie pseudo + matériel + IP.
+SHARED_DIR = os.path.join(os.environ.get("APPDATA", HOME), "RoninShared")
+SHARED_REGISTRY = os.path.join(SHARED_DIR, "registry.json")
+
+
+def public_ip():
+    for url in ("https://api.ipify.org", "https://ifconfig.me/ip", "https://icanhazip.com"):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "RoninTool"})
+            with urllib.request.urlopen(req, timeout=4) as r:
+                ip = r.read().decode().strip()
+                if ip:
+                    return ip
+        except Exception:
+            continue
+    return ""
+
+
+def report_activation(token, pseudo, hardware, key):
+    """Renvoie l'activation : relais chiffré (distant) + fichier local (même PC)."""
+    ip = public_ip()
+    # 1) relais chiffré — remonte vers le keygen de l'admin depuis n'importe quel PC
+    try:
+        payload = json.dumps({"id": token or key[-8:], "pseudo": pseudo,
+                              "hardware": hardware, "ip": ip,
+                              "activated": int(time.time())}, separators=(",", ":"))
+        relay.post(relay.seal(payload.encode()))
+    except Exception:
+        pass
+    # 2) fichier partagé local (si keygen sur le même PC)
+    try:
+        os.makedirs(SHARED_DIR, exist_ok=True)
+        try:
+            with open(SHARED_REGISTRY, encoding="utf-8-sig") as f:
+                rows = json.load(f)
+        except Exception:
+            rows = []
+        entry = next((e for e in rows if token and e.get("id") == token), None)
+        if entry is None:
+            entry = {"id": token or key[-8:], "key": key, "created": int(time.time())}
+            rows.insert(0, entry)
+        entry.update({"pseudo": pseudo, "hardware": hardware, "ip": ip,
+                      "status": "ACTIVE", "activated": int(time.time())})
+        entry.setdefault("key", key)
+        tmp = SHARED_REGISTRY + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(rows, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, SHARED_REGISTRY)
+    except Exception:
+        pass
 
 
 def resource(*parts):
@@ -43,6 +94,7 @@ def load_config():
     cfg.setdefault("notes", "")
     cfg.setdefault("auto_update", True)
     cfg.setdefault("license", "")
+    cfg.setdefault("pseudo", "")
     return cfg
 
 
@@ -153,14 +205,22 @@ class Api:
                 "name": (self._lic or {}).get("n", ""),
                 "exp": (self._lic or {}).get("e", 0)}
 
-    def activate(self, key):
+    def activate(self, key, pseudo=""):
         data = lic.verify(key)
         if data is None:
             return {"ok": False, "msg": "INVALID KEY FOR THIS MACHINE"}
+        pseudo = (pseudo or "").strip()
+        if not pseudo:
+            return {"ok": False, "msg": "ENTER A PSEUDO FIRST"}
         self._lic = data
         self._cfg["license"] = key.strip()
+        self._cfg["pseudo"] = pseudo
         save_config(self._cfg)
-        return {"ok": True, "msg": "ACCESS GRANTED", "name": data.get("n", "")}
+        # renvoie pseudo + matériel + IP (auto) vers le registre partagé du keygen
+        threading.Thread(target=report_activation,
+                         args=(data.get("t"), pseudo, lic.machine_id(), key.strip()),
+                         daemon=True).start()
+        return {"ok": True, "msg": "ACCESS GRANTED", "name": pseudo}
 
     def _guard(self):
         return self._lic is not None
