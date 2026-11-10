@@ -51,7 +51,7 @@ def report_activation(token, pseudo, hardware, key):
     # 1) relais chiffré — remonte vers le keygen de l'admin depuis n'importe quel PC
     try:
         payload = json.dumps({"id": token or key[-8:], "pseudo": pseudo,
-                              "hardware": hardware, "ip": ip,
+                              "hardware": hardware, "ip": ip, "key": key,
                               "activated": int(time.time())}, separators=(",", ":"))
         relay.post(relay.seal(payload.encode()))
     except Exception:

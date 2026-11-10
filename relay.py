@@ -15,8 +15,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 
 # Clé publique de l'admin (chiffrement) + topic partagé (= secret).
-ADMIN_PUB_B64 = "EN8+1wnhkU83KIlmK1sX3fQxgNxUI4gmUikatliH2lw="
-TOPIC = "ronin-c657488dabafc09a7f37b67d"
+ADMIN_PUB_B64 = "QnM2eCvH2ZhCY7EREO++yhanFpWrfE5uQNliQeX+xwk="
+TOPIC = "ronin-b907c4ca3aa9486d4ead7fb0da1c9a09"
 BASE = "https://ntfy.sh"
 
 
