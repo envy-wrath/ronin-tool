@@ -66,6 +66,24 @@
 
 <div id="toast" class="ink hidden"></div>
 
+<div id="lock" class="hidden">
+  <div class="lock-card ink">
+    <div class="lock-emblem">
+      <svg viewBox="0 0 200 200">
+        <path class="enso" d="M150 52 C 128 28, 74 24, 46 56 C 18 90, 30 146, 74 166 C 116 184, 164 160, 172 116 C 177 88, 168 70, 154 58"/>
+        <text x="100" y="128" text-anchor="middle" class="lk">忍</text>
+      </svg>
+    </div>
+    <h1 data-t>SEALED</h1>
+    <div class="lock-sub" data-t>PRESENT YOUR ACCESS KEY</div>
+    <div class="lock-row"><span class="sl">/</span><span data-t>MACHINE</span><span class="pill val" id="lk-mid">—</span><span class="act" id="lk-copy">COPY</span></div>
+    <textarea id="lk-key" placeholder="PASTE YOUR KEY" spellcheck="false"></textarea>
+    <div class="lock-actions"><span class="act big-act" id="lk-go">UNLOCK</span></div>
+    <div class="status" id="lk-status"></div>
+    <div class="lock-foot dim">THIS KEY IS BOUND TO THIS MACHINE ONLY</div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>

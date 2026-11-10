@@ -17,6 +17,7 @@ import webbrowser
 import psutil
 import webview
 
+import license as lic
 from version import REPO, VERSION
 
 NO_WINDOW = 0x08000000
@@ -41,6 +42,7 @@ def load_config():
     cfg.setdefault("custom", {})
     cfg.setdefault("notes", "")
     cfg.setdefault("auto_update", True)
+    cfg.setdefault("license", "")
     return cfg
 
 
@@ -142,6 +144,26 @@ class Api:
         self._net = None
         self._update = None
         self._progress = {"state": "idle", "pct": 0, "msg": ""}
+        self._lic = lic.verify(self._cfg.get("license"))  # None si pas déverrouillé
+
+    # ---------- licence / verrou ----------
+    def license_status(self):
+        return {"licensed": self._lic is not None,
+                "machine": lic.machine_id(),
+                "name": (self._lic or {}).get("n", ""),
+                "exp": (self._lic or {}).get("e", 0)}
+
+    def activate(self, key):
+        data = lic.verify(key)
+        if data is None:
+            return {"ok": False, "msg": "INVALID KEY FOR THIS MACHINE"}
+        self._lic = data
+        self._cfg["license"] = key.strip()
+        save_config(self._cfg)
+        return {"ok": True, "msg": "ACCESS GRANTED", "name": data.get("n", "")}
+
+    def _guard(self):
+        return self._lic is not None
 
     # ---------- fenêtre ----------
     def info(self):
@@ -162,6 +184,8 @@ class Api:
         return out
 
     def run(self, name, args):
+        if not self._guard():
+            return {"ok": False, "msg": "LOCKED"}
         name = name.upper().strip()
         args = [a for a in (args or []) if a.strip()]
         try:
@@ -248,6 +272,8 @@ class Api:
         return [{"name": g["name"], "mem": g["mem"], "count": len(g["pids"])} for g in top]
 
     def kill(self, name):
+        if not self._guard():
+            return {"ok": False, "msg": "LOCKED"}
         if name.lower() in ("ronin.exe", "python.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "system"):
             return {"ok": False, "msg": "PROTECTED PROCESS"}
         n = 0
@@ -278,6 +304,8 @@ class Api:
         return out
 
     def clean(self, key):
+        if not self._guard():
+            return {"ok": False, "msg": "LOCKED"}
         try:
             if key == "BIN":
                 size, _ = recycle_info()

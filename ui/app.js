@@ -386,22 +386,48 @@ function toast(head, msg, action) {
   $("#t-x").onclick = () => t.classList.add("hidden");
 }
 
+/* ---------- verrou ---------- */
+async function gate() {
+  const st = await api.license_status();
+  $("#lk-mid").textContent = st.machine;
+  if (st.licensed) return true;
+  return new Promise(resolve => {
+    const lock = $("#lock");
+    lock.classList.remove("hidden");
+    glitch($(".lock-card"));
+    typeAll($(".lock-card"), 120);
+    const key = $("#lk-key"), status = $("#lk-status");
+    $("#lk-copy").onclick = async () => { await api.copy(st.machine); setStatus(status, "MACHINE ID COPIED"); };
+    const tryKey = async () => {
+      const r = await api.activate(key.value);
+      setStatus(status, r.msg, r.ok);
+      if (r.ok) { flash($(".lock-card")); setTimeout(() => { lock.classList.add("hidden"); resolve(true); }, 450); }
+    };
+    $("#lk-go").onclick = tryKey;
+    key.onkeydown = e => { if (e.key === "Enter" && e.ctrlKey) tryKey(); };
+    setTimeout(() => key.focus(), 400);
+  });
+}
+
 /* ---------- démarrage ---------- */
 async function boot() {
   INFO = await api.info();
   $("#ver").textContent = "v" + INFO.version;
   $("#foot-ver").textContent = "V" + INFO.version;
-  buildTabs();
   $("#btn-close").onclick = () => api.close();
   $("#btn-min").onclick = () => api.minimize();
+  glitch($("#bar"));
+  typeAll($("#bar"));
+  await gate();  // bloque tant que la clé n'est pas validée
+  buildTabs();
   document.addEventListener("keydown", e => {
     const digit = /^(?:Digit|Numpad)([1-5])$/.exec(e.code);  // touche physique (AZERTY ok)
     if (e.ctrlKey && digit) { select(+digit[1] - 1); e.preventDefault(); }
     else if (current === 0 && !e.ctrlKey && e.key.length === 1 && document.activeElement !== $("#cmd") && document.activeElement.tagName !== "TEXTAREA") $("#cmd")?.focus();
   });
   document.addEventListener("contextmenu", e => { if (!e.target.closest("input,textarea")) e.preventDefault(); });
-  glitch($("#bar")); glitch($("#nav"));
-  typeAll($("#bar")); typeAll($("#nav"), 80);
+  glitch($("#nav"));
+  typeAll($("#nav"), 80);
   setTimeout(() => select(0), 180);
   if (INFO.auto_update) {
     setTimeout(async () => {
@@ -427,6 +453,8 @@ function mockApi() {
     password: l => Promise.resolve(Array.from({ length: l }, () => "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*?"[(Math.random() * 64) | 0]).join("")),
     copy: () => ok(""), notes: () => Promise.resolve(""), save_notes: () => ok(""), set_auto_update: () => ok(""),
     open_url: () => ok(""), minimize: () => 0, close: () => 0,
+    license_status: () => Promise.resolve({ licensed: true, machine: "DEMO-MOCK-0000-0000", name: "", exp: 0 }),
+    activate: () => ok("ACCESS GRANTED"),
     check_update: () => Promise.resolve({ ok: true, latest: "1.0.1", newer: true, notes: "- NEW TOOLS\n- FASTER SCAN", date: "2026-11-10" }),
     install_update: () => Promise.resolve({ ok: false, msg: "DEV MODE — BUILD THE EXE FIRST" }),
     update_progress: () => Promise.resolve({ state: "idle", pct: 0, msg: "" }),
