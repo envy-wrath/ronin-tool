@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>RONIN</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- bords d'encre irréguliers pour les panneaux -->
+    <filter id="ink" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.022 0.05" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="ink-sm" x="-5%" y="-20%" width="110%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.12" numOctaves="3" seed="2" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7"/>
+    </filter>
+    <!-- trait de pinceau sec -->
+    <filter id="brush" x="-10%" y="-40%" width="120%" height="180%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9 0.08" numOctaves="2" seed="4" result="t"/>
+      <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.75" result="holes"/>
+      <feComposite in="SourceGraphic" in2="holes" operator="in" result="dry"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="9" result="w"/>
+      <feDisplacementMap in="dry" in2="w" scale="4"/>
+    </filter>
+  </defs>
+</svg>
+
+<div id="sky"><i></i><i></i><i></i></div>
+<div id="floor"></div>
+<div id="grain"></div>
+
+<header id="bar" class="pywebview-drag-region">
+  <div class="brand"><span class="kj">浪人</span><span data-t>RONIN</span><span class="ver" id="ver">v1.0.0</span></div>
+  <div class="win">
+    <button id="btn-min" title="Réduire"><svg viewBox="0 0 40 20"><path d="M6 11 C14 9, 26 12, 34 10" class="stroke grey"/></svg></button>
+    <button id="btn-close" title="Fermer"><svg viewBox="0 0 40 40"><path d="M9 8 C17 16, 24 24, 33 33" class="stroke red"/><path d="M32 7 C24 15, 17 23, 7 34" class="stroke red thin"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <nav id="nav" class="ink">
+    <div class="nav-title" data-t>COMMAND DECK</div>
+    <div class="nav-sub" data-t>CHOOSE YOUR BLADE</div>
+    <ul id="tabs"></ul>
+    <div class="nav-foot"><span class="pill" id="foot-ver">V1.0.0</span><span class="dim" data-t>CTRL + 1–5</span></div>
+  </nav>
+
+  <section id="panel" class="ink">
+    <div id="emblem">
+      <svg viewBox="0 0 200 200">
+        <path class="enso" d="M150 52 C 128 28, 74 24, 46 56 C 18 90, 30 146, 74 166 C 116 184, 164 160, 172 116 C 177 88, 168 70, 154 58"/>
+        <path class="enso thin" d="M154 58 C 160 64, 164 70, 166 78"/>
+        <text id="kanji" x="100" y="128" text-anchor="middle">令</text>
+      </svg>
+    </div>
+    <div class="head">
+      <h1 id="title" data-t>COMMANDS</h1>
+      <div id="subtitle" data-t>EXECUTE YOUR COMMAND</div>
+    </div>
+    <div id="view"></div>
+  </section>
+</main>
+
+<div id="toast" class="ink hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

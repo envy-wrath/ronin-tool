@@ -1,0 +1,34 @@
+name: Release
+
+# Pousser un tag "vX.Y.Z" compile Ronin.exe et publie la release.
+# Les copies installées la détectent et se mettent à jour toutes seules.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Dépendances
+        run: pip install -r requirements.txt
+      - name: Version depuis le tag
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart("v")
+          (Get-Content version.py) -replace '^VERSION = ".*"', "VERSION = `"$v`"" | Set-Content version.py -Encoding utf8
+          Get-Content version.py
+      - name: Build
+        run: python -m PyInstaller --noconfirm --onefile --windowed --name Ronin --icon assets/ronin.ico --add-data "ui;ui" app.py
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Ronin.exe
+          generate_release_notes: true
